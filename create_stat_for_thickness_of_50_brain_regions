@@ -1,0 +1,102 @@
+### Import Libaries
+import pandas as pd
+from scipy import stats
+from scipy.stats import ttest_ind_from_stats
+import numpy as np
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+
+##Add the input csv file
+df1 = pd.read_csv('/allthickness_ADNI_no_dup_use_final1.csv')
+
+##Read the mean and SD of this inputs
+grouped_mean = df1.groupby('Amyloid_consensus')['Right_MPoG_postcentral_gyrus_medial_segment_thickness','Left_MPoG_postcentral_gyrus_medial_segment_thickness','Right_MPrG_precentral_gyrus_medial_segment_thickness','Left_MPrG_precentral_gyrus_medial_segment_thickness','Right_MSFG_superior_frontal_gyrus_medial_segment_thickness','Left_MSFG_superior_frontal_gyrus_medial_segment_thickness','Right_MTG_middle_temporal_gyrus_thickness','Left_MTG_middle_temporal_gyrus_thickness','Right_OCP_occipital_pole_thickness','Left_OCP_occipital_pole_thickness','Right_OFuG_occipital_fusiform_gyrus_thickness','Left_OFuG_occipital_fusiform_gyrus_thickness','Right_OpIFG_opercular_part_of_the_inferior_frontal_gyrus_thickness','Left_OpIFG_opercular_part_of_the_inferior_frontal_gyrus_thickness','Right_OrIFG_orbital_part_of_the_inferior_frontal_gyrus_thickness','Left_OrIFG_orbital_part_of_the_inferior_frontal_gyrus_thickness','Right_PCgG_posterior_cingulate_gyrus_thickness','Left_PCgG_posterior_cingulate_gyrus_thickness','Right_PCu_precuneus_thickness','Left_PCu_precuneus_thickness','Right_PHG_parahippocampal_gyrus_thickness','Left_PHG_parahippocampal_gyrus_thickness','Right_PIns_posterior_insula_thickness','Left_PIns_posterior_insula_thickness','Right_PO_parietal_operculum_thickness','Left_PO_parietal_operculum_thickness','Right_PoG_postcentral_gyrus_thickness','Left_PoG_postcentral_gyrus_thickness','Right_POrG_posterior_orbital_gyrus_thickness','Left_POrG_posterior_orbital_gyrus_thickness','Right_PP_planum_polare_thickness','Left_PP_planum_polare_thickness','Right_PrG_precentral_gyrus_thickness','Left_PrG_precentral_gyrus_thickness','Right_PT_planum_temporale_thickness','Left_PT_planum_temporale_thickness','Right_SFG_superior_frontal_gyrus_thickness','Left_SFG_superior_frontal_gyrus_thickness','Right_SMC_supplementary_motor_cortex_thickness','Left_SMC_supplementary_motor_cortex_thickness','Right_SMG_supramarginal_gyrus_thickness','Left_SMG_supramarginal_gyrus_thickness','Right_SOG_superior_occipital_gyrus_thickness','Left_SOG_superior_occipital_gyrus_thickness','Right_SPL_superior_parietal_lobule_thickness','Left_SPL_superior_parietal_lobule_thickness','Right_STG_superior_temporal_gyrus_thickness','Left_STG_superior_temporal_gyrus_thickness','Right_TMP_temporal_pole_thickness','Left_TMP_temporal_pole_thickness' ].mean().reset_index().round(2)
+grouped_sd = df1.groupby('Amyloid_consensus')['Right_MPoG_postcentral_gyrus_medial_segment_thickness','Left_MPoG_postcentral_gyrus_medial_segment_thickness','Right_MPrG_precentral_gyrus_medial_segment_thickness','Left_MPrG_precentral_gyrus_medial_segment_thickness','Right_MSFG_superior_frontal_gyrus_medial_segment_thickness','Left_MSFG_superior_frontal_gyrus_medial_segment_thickness','Right_MTG_middle_temporal_gyrus_thickness','Left_MTG_middle_temporal_gyrus_thickness','Right_OCP_occipital_pole_thickness','Left_OCP_occipital_pole_thickness','Right_OFuG_occipital_fusiform_gyrus_thickness','Left_OFuG_occipital_fusiform_gyrus_thickness','Right_OpIFG_opercular_part_of_the_inferior_frontal_gyrus_thickness','Left_OpIFG_opercular_part_of_the_inferior_frontal_gyrus_thickness','Right_OrIFG_orbital_part_of_the_inferior_frontal_gyrus_thickness','Left_OrIFG_orbital_part_of_the_inferior_frontal_gyrus_thickness','Right_PCgG_posterior_cingulate_gyrus_thickness','Left_PCgG_posterior_cingulate_gyrus_thickness','Right_PCu_precuneus_thickness','Left_PCu_precuneus_thickness','Right_PHG_parahippocampal_gyrus_thickness','Left_PHG_parahippocampal_gyrus_thickness','Right_PIns_posterior_insula_thickness','Left_PIns_posterior_insula_thickness','Right_PO_parietal_operculum_thickness','Left_PO_parietal_operculum_thickness','Right_PoG_postcentral_gyrus_thickness','Left_PoG_postcentral_gyrus_thickness','Right_POrG_posterior_orbital_gyrus_thickness','Left_POrG_posterior_orbital_gyrus_thickness','Right_PP_planum_polare_thickness','Left_PP_planum_polare_thickness','Right_PrG_precentral_gyrus_thickness','Left_PrG_precentral_gyrus_thickness','Right_PT_planum_temporale_thickness','Left_PT_planum_temporale_thickness','Right_SFG_superior_frontal_gyrus_thickness','Left_SFG_superior_frontal_gyrus_thickness','Right_SMC_supplementary_motor_cortex_thickness','Left_SMC_supplementary_motor_cortex_thickness','Right_SMG_supramarginal_gyrus_thickness','Left_SMG_supramarginal_gyrus_thickness','Right_SOG_superior_occipital_gyrus_thickness','Left_SOG_superior_occipital_gyrus_thickness','Right_SPL_superior_parietal_lobule_thickness','Left_SPL_superior_parietal_lobule_thickness','Right_STG_superior_temporal_gyrus_thickness','Left_STG_superior_temporal_gyrus_thickness','Right_TMP_temporal_pole_thickness','Left_TMP_temporal_pole_thickness' ].std().reset_index().round(2)
+
+##Group them together
+frames = [grouped_mean, grouped_sd]
+result = pd.concat(frames)
+#display(grouped_mean)
+
+
+##Create the models to display the p-values and T-values
+model1a = ols('Right_MPoG_postcentral_gyrus_medial_segment_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit() 
+model1b = ols('Left_MPoG_postcentral_gyrus_medial_segment_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model2a= ols('Right_MPrG_precentral_gyrus_medial_segment_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model2b = ols('Left_MPrG_precentral_gyrus_medial_segment_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit() 
+model3a= ols('Right_MSFG_superior_frontal_gyrus_medial_segment_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model3b = ols('Left_MSFG_superior_frontal_gyrus_medial_segment_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit() 
+model4a= ols('Right_MTG_middle_temporal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model4b = ols('Left_MTG_middle_temporal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit() 
+model5a= ols('Right_OCP_occipital_pole_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model5b = ols('Left_OCP_occipital_pole_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit() 
+model6a= ols('Right_OFuG_occipital_fusiform_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model6b = ols('Left_OFuG_occipital_fusiform_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit() 
+model7a= ols('Right_OpIFG_opercular_part_of_the_inferior_frontal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model7b= ols('Left_OpIFG_opercular_part_of_the_inferior_frontal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model8a= ols('Right_OrIFG_orbital_part_of_the_inferior_frontal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model8b= ols('Left_OrIFG_orbital_part_of_the_inferior_frontal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model9a= ols('Right_PCgG_posterior_cingulate_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model9b= ols('Left_PCgG_posterior_cingulate_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model10a= ols('Right_PCu_precuneus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model10b= ols('Left_PCu_precuneus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model11a= ols('Right_PHG_parahippocampal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model11b= ols('Left_PHG_parahippocampal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model12a= ols('Right_PIns_posterior_insula_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model12b= ols('Left_PIns_posterior_insula_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model13a= ols('Right_PO_parietal_operculum_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model13b= ols('Left_PO_parietal_operculum_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model14a= ols('Right_PoG_postcentral_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model14b= ols('Left_PoG_postcentral_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model15a= ols('Right_POrG_posterior_orbital_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model15b= ols('Left_POrG_posterior_orbital_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model16a= ols('Right_PP_planum_polare_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model16b= ols('Left_PP_planum_polare_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model17a= ols('Right_PrG_precentral_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model17b= ols('Left_PrG_precentral_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model18a= ols('Right_PT_planum_temporale_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model18b= ols('Left_PT_planum_temporale_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model19a= ols('Right_SFG_superior_frontal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model19b= ols('Left_SFG_superior_frontal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model20a= ols('Right_SMC_supplementary_motor_cortex_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model20b= ols('Left_SMC_supplementary_motor_cortex_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model21a= ols('Right_SMG_supramarginal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model21b= ols('Left_SMG_supramarginal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model22a= ols('Right_SOG_superior_occipital_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model22b= ols('Left_SOG_superior_occipital_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model23a= ols('Right_SPL_superior_parietal_lobule_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model23b= ols('Left_SPL_superior_parietal_lobule_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model24a= ols('Right_STG_superior_temporal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model24b= ols('Left_STG_superior_temporal_gyrus_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model25a= ols('Right_TMP_temporal_pole_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+model25b= ols('Left_TMP_temporal_pole_thickness ~ Amyloid_consensus +AgeatTest', data=df1).fit()
+#print(model.summary())
+
+##Loop through the model to create a model engine
+for r in range (1, 2): 
+    #arr=[model1a.pvalues[r],model1a.tvalues[r],model1b.pvalues[r],model1b.tvalues[r],model2a.pvalues[r],model2a.tvalues[r],model2b.pvalues[r],model2b.tvalues[r],model3a.pvalues[r],model3a.tvalues[r],model3b.pvalues[r],model3b.tvalues[r],model4a.pvalues[r],model4a.tvalues[r],model4b.pvalues[r],model4b.tvalues[r],model5a.pvalues[r],model5a.tvalues[r],model5b.pvalues[r],model5b.tvalues[r],model6a.pvalues[r],model6a.tvalues[r],model6b.pvalues[r],model6b.tvalues[r],model7a.pvalues[r],model7a.tvalues[r],model7b.pvalues[r],model7b.tvalues[r],model8a.pvalues[r],model8a.tvalues[r],model8b.pvalues[r],model8b.tvalues[r]]
+    arr=[model1a.pvalues[r],model1b.pvalues[r],model2a.pvalues[r],model2b.pvalues[r],model3a.pvalues[r],model3b.pvalues[r],model4a.pvalues[r],model4b.pvalues[r],model5a.pvalues[r],model5b.pvalues[r],model6a.pvalues[r],model6b.pvalues[r],model7a.pvalues[r],model7b.pvalues[r],model8a.pvalues[r],model8b.pvalues[r],model9a.pvalues[r],model9b.pvalues[r],model10a.pvalues[r],model10b.pvalues[r],model11a.pvalues[r],model11b.pvalues[r],model12a.pvalues[r],model12b.pvalues[r],model13a.pvalues[r],model13b.pvalues[r],model14a.pvalues[r],model14b.pvalues[r],model15a.pvalues[r],model15b.pvalues[r],model16a.pvalues[r],model16b.pvalues[r],model17a.pvalues[r],model17b.pvalues[r],model18a.pvalues[r],model18b.pvalues[r],model19a.pvalues[r],model19b.pvalues[r],model20a.pvalues[r],model20b.pvalues[r],model21a.pvalues[r],model21b.pvalues[r],model22a.pvalues[r],model22b.pvalues[r],model23a.pvalues[r],model23b.pvalues[r],model24a.pvalues[r],model24b.pvalues[r],model25a.pvalues[r],model25b.pvalues[r]]
+    arr1=[model1a.tvalues[r],model1b.tvalues[r],model2a.tvalues[r],model2b.tvalues[r],model3a.tvalues[r],model3b.tvalues[r],model4a.tvalues[r],model4b.tvalues[r],model5a.tvalues[r],model5b.tvalues[r],model6a.tvalues[r],model6b.tvalues[r],model7a.tvalues[r],model7b.tvalues[r],model8a.tvalues[r],model8b.tvalues[r],model9a.tvalues[r],model9b.tvalues[r],model10a.tvalues[r],model10b.tvalues[r],model11a.tvalues[r],model11b.tvalues[r],model12a.tvalues[r],model12b.tvalues[r],model13a.tvalues[r],model13b.tvalues[r],model14a.tvalues[r],model14b.tvalues[r],model15a.tvalues[r],model15b.tvalues[r],model16a.tvalues[r],model16b.tvalues[r],model17a.tvalues[r],model17b.tvalues[r],model18a.tvalues[r],model18b.tvalues[r],model19a.tvalues[r],model19b.tvalues[r],model20a.tvalues[r],model20b.tvalues[r],model21a.tvalues[r],model21b.tvalues[r],model22a.tvalues[r],model22b.tvalues[r],model23a.tvalues[r],model23b.tvalues[r],model24a.tvalues[r],model24b.tvalues[r],model25a.tvalues[r],model25b.tvalues[r]]
+    rppp= pd.DataFrame(list(zip(arr, arr1)), columns =['P-value', 'T-value']).T 
+    rppp['Amyloid_consensus']="NaN";rppp['Right_MPoG_postcentral_gyrus_medial_segment_thickness']=rppp[0];rppp['Left_MPoG_postcentral_gyrus_medial_segment_thickness']=rppp[1];rppp['Right_MPrG_precentral_gyrus_medial_segment_thickness']=rppp[2];rppp['Left_MPrG_precentral_gyrus_medial_segment_thickness']=rppp[3];rppp['Right_MSFG_superior_frontal_gyrus_medial_segment_thickness']=rppp[4];rppp['Left_MSFG_superior_frontal_gyrus_medial_segment_thickness']=rppp[5];rppp['Right_MTG_middle_temporal_gyrus_thickness']=rppp[6];rppp['Left_MTG_middle_temporal_gyrus_thickness']=rppp[7];rppp['Right_OCP_occipital_pole_thickness']=rppp[8];rppp['Left_OCP_occipital_pole_thickness']=rppp[9];
+    rppp['Right_OFuG_occipital_fusiform_gyrus_thickness']=rppp[10];rppp['Left_OFuG_occipital_fusiform_gyrus_thickness']=rppp[11];rppp['Right_OpIFG_opercular_part_of_the_inferior_frontal_gyrus_thickness']=rppp[12];rppp['Left_OpIFG_opercular_part_of_the_inferior_frontal_gyrus_thickness']=rppp[13];rppp['Right_OrIFG_orbital_part_of_the_inferior_frontal_gyrus_thickness']=rppp[14];rppp['Left_OrIFG_orbital_part_of_the_inferior_frontal_gyrus_thickness']=rppp[15];rppp['Right_PCgG_posterior_cingulate_gyrus_thickness']=rppp[16];rppp['Left_PCgG_posterior_cingulate_gyrus_thickness']=rppp[17];rppp['Right_PCu_precuneus_thickness']=rppp[18];rppp['Left_PCu_precuneus_thickness']=rppp[19];rppp['Right_PHG_parahippocampal_gyrus_thickness']=rppp[20];rppp['Left_PHG_parahippocampal_gyrus_thickness']=rppp[21];rppp['Right_PIns_posterior_insula_thickness']=rppp[22];
+    rppp['Left_PIns_posterior_insula_thickness']=rppp[23];rppp['Right_PO_parietal_operculum_thickness']=rppp[24];rppp['Left_PO_parietal_operculum_thickness']=rppp[25];rppp['Right_PoG_postcentral_gyrus_thickness']=rppp[26];rppp['Left_PoG_postcentral_gyrus_thickness']=rppp[27];rppp['Right_POrG_posterior_orbital_gyrus_thickness']=rppp[28];rppp['Left_POrG_posterior_orbital_gyrus_thickness']=rppp[29];
+    rppp['Right_PP_planum_polare_thickness']=rppp[30];rppp['Left_PP_planum_polare_thickness']=rppp[31];rppp['Right_PrG_precentral_gyrus_thickness']=rppp[32];rppp['Left_PrG_precentral_gyrus_thickness']=rppp[33];rppp['Right_PT_planum_temporale_thickness']=rppp[34];rppp['Left_PT_planum_temporale_thickness']=rppp[35];
+    rppp['Right_SFG_superior_frontal_gyrus_thickness']=rppp[36];rppp['Left_SFG_superior_frontal_gyrus_thickness']=rppp[37];rppp['Right_SMC_supplementary_motor_cortex_thickness']=rppp[38];rppp['Left_SMC_supplementary_motor_cortex_thickness']=rppp[39];
+    rppp['Right_SMG_supramarginal_gyrus_thickness']=rppp[40];rppp['Left_SMG_supramarginal_gyrus_thickness']=rppp[41];
+    rppp['Right_SOG_superior_occipital_gyrus_thickness']=rppp[42];rppp['Left_SOG_superior_occipital_gyrus_thickness']=rppp[43];
+    rppp['Right_SPL_superior_parietal_lobule_thickness']=rppp[44];rppp['Left_SPL_superior_parietal_lobule_thickness']=rppp[45];
+    rppp['Right_STG_superior_temporal_gyrus_thickness']=rppp[46];rppp['Left_STG_superior_temporal_gyrus_thickness']=rppp[47];
+    rppp['Right_TMP_temporal_pole_thickness']=rppp[48];rppp['Left_TMP_temporal_pole_thickness']=rppp[49]
+    #display(rppp)
+    frames2 = [result, rppp]
+    result2 = pd.concat(frames2)
+    #column_headers = list(result2.columns.values)
+    #mn=pd.DataFrame(result2)
+    #jjb=mn.replace([np.nan], " ")
+    nig=result2.drop(columns=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49, 'Amyloid_consensus'])
+    row_names = {0:'Negative_Mean',1:'Positive_Mean',0:'Negative_SD',1:'Positive_SD'}
+    final=nig.rename(index = row_names)
+    display(final.T)
+    #print (column_headers)
+    
