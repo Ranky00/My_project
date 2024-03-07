@@ -1,0 +1,68 @@
+import os
+import pandas as pd
+dfr=pd.read_csv('/Users/demoranky/documents/Data_to_dave_sandy_ABC/114_IDM_TE.csv')
+dfr1=pd.read_csv('/Users/demoranky/documents/Data_for_suvr_ABC/ABC_composite_SUVR_ready1.csv')
+
+dfr2=pd.concat([dfr, dfr1], axis=1)
+#display(dfr2)
+dfr22 = dfr2.drop(dfr2[dfr2['Amyloid_consensus'] == 'Negative'].index)
+#display(dfr22)
+
+#GM and WM for ABC
+import pandas as pd
+from scipy import stats
+from scipy.stats import ttest_ind_from_stats
+import numpy as np
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+
+#GM and WM for ADNI
+import pandas as pd
+from scipy import stats
+from scipy.stats import ttest_ind_from_stats
+import numpy as np
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+df1 = dfr2
+
+model1a = ols('TotalEnergy_GM ~ compSUVR +AgeatTest', data=df1).fit() 
+model1b = ols('TotalEnergy_WM ~ compSUVR +AgeatTest', data=df1).fit()
+model2a= ols('IDM_GM ~ compSUVR +AgeatTest', data=df1).fit()
+model2b= ols('IDM_WM ~ compSUVR +AgeatTest', data=df1).fit()
+#print(model.summary())
+for r in range (1, 2): 
+    #arr=[model1a.pvalues[r],model1a.tvalues[r],model1b.pvalues[r],model1b.tvalues[r],model2a.pvalues[r],model2a.tvalues[r],model2b.pvalues[r],model2b.tvalues[r],model3a.pvalues[r],model3a.tvalues[r],model3b.pvalues[r],model3b.tvalues[r],model4a.pvalues[r],model4a.tvalues[r],model4b.pvalues[r],model4b.tvalues[r],model5a.pvalues[r],model5a.tvalues[r],model5b.pvalues[r],model5b.tvalues[r],model6a.pvalues[r],model6a.tvalues[r],model6b.pvalues[r],model6b.tvalues[r],model7a.pvalues[r],model7a.tvalues[r],model7b.pvalues[r],model7b.tvalues[r],model8a.pvalues[r],model8a.tvalues[r],model8b.pvalues[r],model8b.tvalues[r]]
+    arr=[model1a.pvalues[r],model1b.pvalues[r],model2a.pvalues[r],model2b.pvalues[r]]
+    arr1=[model1a.tvalues[r],model1b.tvalues[r],model2a.tvalues[r],model2b.tvalues[r]]
+    rppp= pd.DataFrame(list(zip(arr, arr1)), columns =['P-value', 'T-value']).T 
+    rppp['Amyloid_consensus']="NaN";rppp['TotalEnergy_GM']=rppp[0];rppp['TotalEnergy_WM']=rppp[1];rppp['IDM_GM']=rppp[2];rppp['IDM_WM']=rppp[3]
+    #display(rppp.T)
+    nig=rppp.drop(columns=[0,1,2,3, 'Amyloid_consensus'])
+    row_names ={0:'Negative_Mean',1:'Positive_Mean',0:'Negative_SD',1:'Positive_SD'}
+    final=nig.rename(index = row_names)
+    #display(final.T)
+    dm = pd.DataFrame(final)
+    j=dm.transpose()
+    cols=pd.Series(j.columns)
+    for dup in j.columns[j.columns.duplicated(keep=False)]:
+        cols[j.columns.get_loc(dup)] = ([dup + '.' + str(d_idx) 
+                                     if d_idx != 0 
+                                     else dup 
+                                     for d_idx in range(j.columns.get_loc(dup).sum())]
+                                    )
+    j.columns = cols
+    j.rename(columns={'Negative_SD': "Negative_Mean",'Positive_SD': "Positive_Mean",'Negative_SD.1': "Negative_SD",'Positive_SD.1': "Positive_SD"}, inplace = True)
+    #j['T-value'] = j['rppp[0]'].abs()
+    display(j)
+    
+    
+#out_path1 = "/Users/demoranky/documents/test_folder/114_suvr_full_LM.csv"
+#j.to_csv(out_path1, index=True,float_format='%g')
+
+#out_path10 = "/Users/demoranky/documents/test_folder/114_suvr_pos_neg_data.csv"
+#dfr2.to_csv(out_path10, index=False,float_format='%g')
+
+#out_path11 = "/Users/demoranky/documents/test_folder/207_suvr_data.csv"
+#dfr22.to_csv(out_path11, index=False,float_format='%g')
+
+
